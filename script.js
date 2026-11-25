@@ -1,7 +1,8 @@
 /* ===== Настройки сайта — всё, что ещё не решено, меняется здесь ===== */
 const CONFIG = {
-  telegram: 'https://t.me/vnecamer',
-  channel: 'https://t.me/granitweb',   // кнопка «Канал» внизу
+  telegram: 'https://t.me/granitwebbot',   // бот: заявки и «Давайте обсудим ваш проект»
+  reviewEndpoint: '',   // куда отправлять отзывы (POST JSON); пусто — отзывы не сохраняются
+  channel: 'https://t.me/granitweb',   // кнопка «Канал» на первом экране
   phone: '',        // +79991234567
   email: '',        // name@example.ru
 };
@@ -11,13 +12,15 @@ const CONFIG = {
    monthly — оплата в месяц (отдельной строкой), instead — вариант, который эта услуга заменяет.
    Пакеты считаются по составу той же формулой, что и калькулятор; чтобы задать цену пакета вручную, добавьте price: 90000. */
 const PRICING = {
+  discount: 30,   // скидка на пакеты, %; 0 — выключить (плашки, старые цены и строка в калькуляторе исчезнут)
+  discountUntil: '2026-12-31',   // последний день скидки (по Москве), потом выключается сама; '' — без срока
   types: [
-    { id: 'landing', name: 'Лендинг', price: 25000, days: [7, 10], includes: ['leads'] },
-    { id: 'card', name: 'Визитка', price: 20000, days: [5, 8] },
-    { id: 'corporate', name: 'Корпоративный сайт', price: 50000, days: [14, 20], includes: ['leads'] },
-    { id: 'catalog', name: 'Каталог', price: 65000, days: [15, 22], includes: ['leads', 'admin'] },
-    { id: 'shop', name: 'Интернет-магазин', price: 110000, days: [25, 35], includes: ['leads', 'admin'] },
-    { id: 'custom', name: 'Индивидуальный проект', price: 85000, days: [20, 30], includes: ['leads'] },
+    { id: 'landing', icon: 'landing', name: 'Лендинг', price: 25000, days: [7, 10], includes: ['leads'] },
+    { id: 'card', icon: 'card', name: 'Визитка', price: 20000, days: [5, 8] },
+    { id: 'corporate', icon: 'corporate', name: 'Корпоративный сайт', price: 50000, days: [14, 20], includes: ['leads'] },
+    { id: 'catalog', icon: 'catalog', name: 'Каталог', price: 65000, days: [15, 22], includes: ['leads', 'admin'] },
+    { id: 'shop', icon: 'shop', name: 'Интернет-магазин', price: 110000, days: [25, 35], includes: ['leads', 'admin'] },
+    { id: 'custom', icon: 'custom', name: 'Индивидуальный проект', price: 85000, days: [20, 30], includes: ['leads'] },
   ],
   features: [
     { id: 'admin', name: 'Админ-панель', note: 'Тексты, цены и фото меняете сами', price: 15000, days: [3, 5] },
@@ -45,11 +48,9 @@ const REVIEWS = [];
 
 /* Вымышлены — показываются, пока REVIEWS пуст, вместе со строкой reviewsNote под заголовком; с первым настоящим исчезают все */
 const DEMO_REVIEWS = [
-  { name: 'Алексей М.', role: 'Автосервис', work: 'Лендинг', rating: 5, text: 'Нужна была простая страница с услугами и заявками. Сначала согласовали структуру, потом дизайн. Заявки теперь приходят в Telegram, ничего не теряется.' },
-  { name: 'Марина К.', role: 'Студия маникюра', work: 'Чат-бот', rating: 5, text: 'Бот записывает клиентов и отвечает на частые вопросы, а я больше не сижу в переписке вечером. Пару раз просила поправить тексты — сделали без споров.' },
-  { name: 'Игорь В.', role: 'Магазин запчастей', work: 'Сайт с каталогом', rating: 5, text: 'Цены и фото меняю сам через админку, разобрался за вечер. Понравилось, что промежуточный результат всё время был по ссылке и правки видно сразу.' },
-  { name: 'Ольга С.', role: 'Кондитерская', work: 'Сайт-визитка', rating: 4, text: 'Сайт аккуратно смотрится на телефоне, всё понятно с первого экрана. Немного задержались с фото с моей стороны, но в остальном шли по плану.' },
-  { name: 'Денис Р.', role: 'Грузоперевозки', work: 'SEO', rating: 5, text: 'Начали с проверки сайта: исправили ошибки, переписали заголовки, подключили Вебмастер. Каждый месяц получаю понятный отчёт, что сделано.' },
+  { name: 'Анна К.', role: 'Частная клиника', work: 'Стоматология', rating: 5, text: 'Хотели спокойный сайт без лишнего. Услуги и цены теперь в одном списке, записаться на приём можно с любого экрана. Фото и тексты согласовали до вёрстки, поэтому переделывать почти не пришлось.' },
+  { name: 'Павел С.', role: 'Клиника для животных', work: 'Ветклиника', rating: 5, text: 'Главное было, чтобы владелец питомца сразу видел экстренную помощь и телефон. Направления, цены и абонементы разложили понятно, с телефона всё удобно. Промежуточные версии смотрели по ссылке.' },
+  { name: 'Роман Т.', role: 'Тренажёрный зал', work: 'Фитнес-клуб', rating: 5, text: 'Нужен был сайт с характером: тёмный, крупный, без шаблонных картинок. Расписание по дням удобно смотреть с телефона, а кнопка пробной тренировки всегда под рукой. Дизайн попал в нас со второго варианта.' },
 ];
 
 function escapeHtml(s) {
@@ -159,7 +160,7 @@ function carousel(list, { first = 0, onChange = () => {}, enabled = () => true }
   return { go, current: () => current };
 }
 
-/* Отзыв с сайта: сервера нет, поэтому открываем чат в Telegram с готовым текстом — отправляет сам человек */
+/* Отзыв с сайта: уходит на CONFIG.reviewEndpoint. Пока адрес пуст, отзыв НИКУДА не уходит, показываем только окно — подключить до выкладки */
 function initReviewForm() {
   const form = document.getElementById('reviewForm');
   const open = document.getElementById('reviewOpen');
@@ -174,20 +175,37 @@ function initReviewForm() {
     const value = Number(form.elements.rating.value) || 0;
     stars.forEach((s, i) => s.classList.toggle('is-on', i < value));
   });
-  form.addEventListener('submit', (e) => {
+  const btn = form.querySelector('[type="submit"]');
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const status = form.querySelector('.rv-status');
     const text = form.elements.text.value.trim();
     if (text.length < 10) { status.textContent = 'Напишите хотя бы пару слов.'; form.elements.text.focus(); return; }
     const rating = Number(form.elements.rating.value) || 0;
     const name = form.elements.name.value.trim();
-    const message = ['Отзыв для сайта GRANIT', rating ? `Оценка: ${rating} из 5` : '', name ? `Имя: ${name}` : '', '', text, '', 'Публикация имени и текста на сайте: согласие дано'].filter((s, i) => s || i > 2).join('\n');
-    sendToTelegram(message, status, 'Открываем чат. Отзыв отправится, когда вы нажмёте там «Отправить».');
+    status.textContent = '';
+    if (CONFIG.reviewEndpoint) {
+      btn.disabled = true;
+      try {
+        const res = await fetch(CONFIG.reviewEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ text, name, rating, consent: true }) });
+        if (!res.ok) throw new Error(res.status);
+      } catch (err) {
+        status.textContent = 'Не удалось отправить отзыв. Попробуйте ещё раз чуть позже.';
+        return;
+      } finally { btn.disabled = false; }
+    }
+    form.reset();
+    stars.forEach((x) => x.classList.remove('is-on'));
+    location.hash = 'thanks';   // окно откроет initWindows
   });
 }
 
 /* ===== Расчёт стоимости: пакеты и калькулятор ===== */
 const PHONE = matchMedia('(max-width: 767px)');
+const moscowDay = () => new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+const DISCOUNT = !PRICING.discountUntil || moscowDay() <= PRICING.discountUntil ? PRICING.discount : 0;
+const UNTIL = DISCOUNT && PRICING.discountUntil ? new Date(PRICING.discountUntil).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' }).replace(' ', '\u00a0') : '';   // «31 декабря»
+const UNTIL_YEAR = UNTIL && `до\u00a0${UNTIL} ${PRICING.discountUntil.slice(0, 4)}`;
 const OPTIONS = [...PRICING.features, ...PRICING.services];
 const money = (n) => `${n.toLocaleString('ru-RU').replace(/\s/g, '\u00a0')}\u00a0₽`;
 const moneyHtml = (n) => money(n).replace('₽', '<span class="cur">₽</span>');   // знак ₽ — шрифтом текста: у Unbounded ради него грузится файл 118 КБ
@@ -218,21 +236,25 @@ function estimate(typeId, ids) {
 function planEstimate(id) {
   const plan = PRICING.plans[id];
   const sum = estimate(plan.type, plan.options);
-  if (plan.price) sum.total = plan.price;
+  sum.full = plan.price || sum.total;
+  sum.total = sum.full - Math.round(sum.full * DISCOUNT / 100);
   return sum;
 }
 
 function renderPlans() {
   document.querySelectorAll('[data-plan-price]').forEach((el) => {
-    el.innerHTML = `<span class="from">от</span> ${moneyHtml(planEstimate(el.dataset.planPrice).total)}`;
+    const { full, total } = planEstimate(el.dataset.planPrice);
+    el.innerHTML = `<span class="from">от</span> ${moneyHtml(total)}`;
+    if (full === total) return;
+    el.insertAdjacentHTML('beforebegin', `<p class="plan-old"><span class="sr-only">Было </span><s>${money(full)}</s> <span class="plan-off"><span class="sr-only">скидка </span>−${DISCOUNT}%</span>${UNTIL ? `<span class="plan-until">до\u00a0${UNTIL}</span>` : ''}</p>`);
   });
   document.querySelectorAll('[data-plan-days]').forEach((el) => { el.textContent = daysText(planEstimate(el.dataset.planDays).days); });
   document.querySelectorAll('[data-days]').forEach((el) => { el.textContent = daysText(findType(el.dataset.days).days); });   // сроки в FAQ
-  // телефон: лента, начинаем с рекомендуемого пакета; шире — обычная сетка
+  // телефон: лента, начинаем со START; шире — обычная сетка
   const list = document.getElementById('planList');
   if (!list) return;
   list.classList.add('is-carousel');
-  carousel(list, { first: Math.max(0, [...list.children].findIndex((c) => c.classList.contains('is-main'))), enabled: () => PHONE.matches });
+  carousel(list, { enabled: () => PHONE.matches, onChange: (i) => list.parentElement.classList.toggle('is-end', i === list.children.length - 1) });
 }
 
 function initCalc() {
@@ -242,29 +264,40 @@ function initCalc() {
   const lines = document.getElementById('calcLines');
   const chosen = new Set();   // выбор человека хранится отдельно от «входит»: сменили тип — он не теряется
   let typeId = PRICING.types[0].id;
+  let planId = '';   // пакет, с которого пришли по «Настроить в калькуляторе»
   let shown = '';
   let timer = 0;
 
   document.getElementById('calcTypes').innerHTML = PRICING.types.map((t) => `
-    <label class="type"><input type="radio" name="type" value="${t.id}"><span class="type-in"><b>${escapeHtml(t.name)}</b><i>от ${moneyHtml(t.price)}</i></span></label>`).join('');
+    <label class="type"><input type="radio" name="type" value="${t.id}"><span class="type-in"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-${t.icon}"/></svg><b>${escapeHtml(t.name)}</b><i>от ${moneyHtml(t.price)}</i></span></label>`).join('');
   const optionHtml = (o) => `
     <label class="opt"><input type="checkbox" name="opt" value="${o.id}"><span class="opt-in"><span class="opt-text"><b>${escapeHtml(o.name)}</b><i>${nb(o.note || '')}</i></span><span class="opt-price"></span></span></label>`;
   document.getElementById('calcFeatures').innerHTML = PRICING.features.map(optionHtml).join('');
   document.getElementById('calcServices').innerHTML = PRICING.services.map(optionHtml).join('');
   form.hidden = false;
 
-  function paint() {
+  // скидка — на пакет: держится, пока его состав не тронули; добавленное сверх пакета считается по обычной цене
+  function result() {
     const sum = estimate(typeId, [...chosen]);
+    const plan = PRICING.plans[planId];
+    if (!plan || plan.type !== typeId || !plan.options.every((id) => chosen.has(id) || isIncluded(sum.type, id))) return sum;
+    const off = estimate(plan.type, plan.options).total - planEstimate(planId).total;
+    if (off > 0) Object.assign(sum, { total: sum.total - off, off, planName: plan.name });
+    return sum;
+  }
+  function paint() {
+    const sum = result();
     form.querySelectorAll('[name="type"]').forEach((i) => { i.checked = i.value === typeId; });
     document.querySelectorAll('input[name="opt"]').forEach((i) => {
       const o = OPTIONS.find((x) => x.id === i.value);
       const included = isIncluded(sum.type, o.id);
-      i.checked = included || chosen.has(o.id);
+      i.checked = !included && chosen.has(o.id);   // «входит» — без галочки: по умолчанию ничего не отмечено
       i.disabled = included;
       i.parentElement.querySelector('.opt-price').innerHTML = included ? 'входит' : `+ ${moneyHtml(o.price)}${o.monthly ? ' / мес' : ''}`;
     });
     lines.innerHTML = `<li><span>${escapeHtml(sum.type.name)}</span><b>${moneyHtml(sum.type.price)}</b></li>` + sum.lines.map(({ option: o, included }) => `
-      <li><span>${escapeHtml(o.name)}</span><b>${included ? 'входит' : moneyHtml(o.price) + (o.monthly ? ' / мес' : '')}</b></li>`).join('');
+      <li><span>${escapeHtml(o.name)}</span><b>${included ? 'входит' : moneyHtml(o.price) + (o.monthly ? ' / мес' : '')}</b></li>`).join('')
+      + (sum.off ? `<li class="is-off"><span>Пакет ${escapeHtml(sum.planName)}: скидка ${DISCOUNT}%</span><b>−${moneyHtml(sum.off)}</b></li>` : '');
     const days = daysText(sum.days);
     document.querySelectorAll('[data-calc="total"]').forEach((el) => {
       el.innerHTML = `<span class="from">от</span> ${moneyHtml(sum.total)}`;
@@ -273,7 +306,10 @@ function initCalc() {
     });
     shown = String(sum.total);
     document.querySelectorAll('[data-calc="days"]').forEach((el) => { el.textContent = days; });
-    const picked = (list) => sum.lines.filter((l) => list.includes(l.option)).map((l) => l.option.name).join(', ') || 'Не выбрано';
+    const picked = (list) => sum.lines.filter((l) => !l.included && list.includes(l.option)).map((l) => l.option.name).join(', ') || 'Не выбрано';
+    const count = (id, list) => { document.querySelector(`[data-count="${id}"]`).textContent = sum.lines.filter((l) => !l.included && list.includes(l.option)).length; };
+    count('features', PRICING.features);
+    count('extras', PRICING.services);
     document.querySelector('[data-picked="features"]').textContent = picked(PRICING.features);
     document.querySelector('[data-picked="extras"]').textContent = picked(PRICING.services);
     document.getElementById('calcMonthly').hidden = !sum.monthly;
@@ -308,12 +344,16 @@ function initCalc() {
   form.addEventListener('submit', (e) => e.preventDefault());
   document.querySelectorAll('[data-preset]').forEach((a) => a.addEventListener('click', () => {
     const plan = PRICING.plans[a.dataset.preset];
+    planId = a.dataset.preset;
     typeId = plan.type;
     chosen.clear();
     plan.options.forEach((id) => chosen.add(id));
     paint();
   }));
-  initCalc.current = () => estimate(typeId, [...chosen]);
+  initCalc.current = result;
+  const note = document.getElementById('calcOff');
+  note.hidden = !DISCOUNT;
+  note.querySelector('b').textContent = `${DISCOUNT}%${UNTIL_YEAR ? ` ${UNTIL_YEAR}` : ''}`;
   paint();
   live.textContent = '';
   clearTimeout(timer);
@@ -330,12 +370,13 @@ function initOrder() {
 
   function fromPlan(id) {
     const sum = planEstimate(id);
-    return [['Пакет', PRICING.plans[id].name], ['Стоимость', `от ${money(sum.total)} (предварительно)`], ['Срок', daysText(sum.days)]];
+    return [['Пакет', PRICING.plans[id].name], ['Стоимость', sum.full > sum.total ? `от ${money(sum.total)} (скидка ${DISCOUNT}%${UNTIL_YEAR ? ` ${UNTIL_YEAR}` : ''}, без скидки ${money(sum.full)}, предварительно)` : `от ${money(sum.total)} (предварительно)`], ['Срок', daysText(sum.days)]];
   }
   function fromCalc() {
     const sum = initCalc.current();
     const names = (list) => sum.lines.filter((l) => list.includes(l.option)).map((l) => l.option.name + (l.included ? ' (входит)' : '')).join(', ');
     return [
+      ['Пакет', sum.off ? `${sum.planName}, скидка ${DISCOUNT}%${UNTIL_YEAR ? ` ${UNTIL_YEAR}` : ''} (−${money(sum.off)})` : ''],
       ['Тип сайта', sum.type.name],
       ['Функции', names(PRICING.features)],
       ['Услуги', names(PRICING.services)],
@@ -379,14 +420,14 @@ function initOrder() {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!ready()) return;
-    sendToTelegram(message(), status, 'Открываем чат. Заявка отправится, когда вы нажмёте там «Отправить».');
+    sendToTelegram(message(), status, 'Открываем бота. Нажмите в нём «Запустить» и отправьте заявку.');
   });
   document.getElementById('orderCopy').addEventListener('click', async (e) => {
     const btn = e.currentTarget;
     if (!ready()) return;
     const ok = await copyText(message(), form);
     btn.focus();
-    status.innerHTML = ok ? `Заявка скопирована — отправьте её в&nbsp;чат <a href="${CONFIG.telegram}" target="_blank" rel="noopener">${CONFIG.telegram.replace(/^https:\/\//, '')}</a>` : 'Не удалось скопировать — нажмите «Открыть Telegram».';
+    status.innerHTML = ok ? `Заявка скопирована — отправьте её нашему боту <a href="${CONFIG.telegram}" target="_blank" rel="noopener">${CONFIG.telegram.replace(/^https:\/\//, '')}</a>` : 'Не удалось скопировать — нажмите «Открыть Telegram».';
   });
 }
 
@@ -395,11 +436,11 @@ function sendToTelegram(message, status, done) {
   const url = `${CONFIG.telegram}?text=${encodeURIComponent(message)}`;
   const note = document.createElement('span');   // своя строка у каждой отправки: запоздавший ответ буфера не попадёт в чужой статус
   status.textContent = `${done} `;
-  status.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" rel="noopener">Не открылся? Открыть чат</a>`);   // если вкладку не пропустил блокировщик
+  status.insertAdjacentHTML('beforeend', `<a href="${url}" target="_blank" rel="noopener">Не открылся? Открыть бота</a>`);   // если вкладку не пропустил блокировщик
   status.append(note);
   // копия в буфер — до открытия вкладки: в некоторых клиентах Telegram текст не подставляется
   try {
-    navigator.clipboard.writeText(message).then(() => { note.textContent = ' Текст скопирован: если он не появился в чате, вставьте его.'; }, () => {});
+    navigator.clipboard.writeText(message).then(() => { note.textContent = ' Текст заявки скопирован: если он не появился в чате, вставьте его.'; }, () => {});
   } catch (err) { /* file:// — буфера нет */ }
   const link = document.createElement('a');
   link.href = url;
@@ -489,7 +530,7 @@ function initWindows() {
     leaving = false;
     if (prev && prev.open) prev.close();
     if (!prev) lock(true);
-    if (next) { next.showModal(); next.scrollTop = 0; } else lock(false);
+    if (next) { next.showModal(); next.scrollTop = 0; next.dispatchEvent(new Event('win-open')); } else lock(false);
     if (jump && !next) {
       jump.scrollIntoView({ behavior: 'instant' });
       jump.tabIndex = -1;
@@ -531,20 +572,107 @@ function initWindows() {
   sync();
 }
 
+/* ===== Презентация работ: вкладки, свайп, стрелки; «Листать сайт» прокручивает снимок внутри рамки ===== */
+function initShow() {
+  const win = document.getElementById('case');
+  const track = document.getElementById('showTrack');
+  if (!win || !track) return;
+  const slides = [...track.children];
+  const tabs = [...win.querySelectorAll('.show-tab')];
+  const arrows = [...win.querySelectorAll('[data-show]')];
+  let current = 0;
+  let width = 0;
+  let moving = 0;   // едем к выбранной вкладке: слайды по пути не подсвечиваем
+
+  function paint(i) {
+    if (i !== current) stop(slides[current]);
+    current = i;
+    slides.forEach((s, k) => { s.inert = k !== i; });
+    tabs.forEach((t, k) => t.setAttribute('aria-pressed', String(k === i)));
+    arrows.forEach((b) => b.setAttribute('aria-disabled', String(!slides[i + Number(b.dataset.show)])));   // не disabled: кнопка потеряла бы фокус
+  }
+  function go(i, instant) {
+    if (!slides[i]) return;
+    paint(i);
+    clearTimeout(moving);
+    moving = setTimeout(() => { moving = 0; }, 800);
+    track.scrollTo(instant ? { left: i * track.clientWidth, behavior: 'instant' } : { left: i * track.clientWidth });
+  }
+  let frame = 0;
+  track.addEventListener('scroll', () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      if (!track.clientWidth || moving) return;
+      const pos = track.scrollLeft / track.clientWidth;
+      const i = Math.round(pos);
+      if (slides[i] && i !== current && Math.abs(pos - i) < .2) paint(i);
+    });
+  }, { passive: true });
+  track.addEventListener('pointerdown', () => { clearTimeout(moving); moving = 0; }, { passive: true });
+  tabs.forEach((t, i) => t.addEventListener('click', () => go(i)));
+  arrows.forEach((b) => b.addEventListener('click', () => go(current + Number(b.dataset.show))));
+  win.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); go(current + (e.key === 'ArrowRight' ? 1 : -1)); }
+  });
+  win.addEventListener('win-open', () => { width = track.clientWidth; go(0, true); });   // пока окно закрыто, размеров нет
+  win.addEventListener('close', () => stop(slides[current]));
+  addEventListener('resize', () => {
+    if (!win.open || track.clientWidth === width) return;
+    width = track.clientWidth;
+    stop(slides[current]);
+    go(current, true);
+  });
+
+  const runs = new Map();   // слайд → { anims, state }
+  const label = (slide, text, icon) => {
+    slide.querySelector('.show-play .btn-t').textContent = text;
+    slide.querySelector('.show-play .btn-go use').setAttribute('href', `#i-${icon}`);
+  };
+  function stop(slide) {
+    const run = runs.get(slide);
+    if (run) { runs.delete(slide); run.anims.forEach((a) => a.cancel()); }
+    label(slide, 'Листать сайт', 'play');
+  }
+  // движение вызвано нажатием, поэтому идёт и при «уменьшении движения»
+  function play(slide) {
+    const anims = [...slide.querySelectorAll('.mock-view')].map((view) => {
+      const img = view.querySelector('img');
+      const way = img.offsetHeight - view.clientHeight;
+      if (way <= 0 || !img.animate) return null;
+      return img.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${-way}px)` }], { duration: 13000, easing: 'cubic-bezier(.35, 0, .65, 1)', fill: 'forwards' });
+    }).filter(Boolean);
+    if (!anims.length) return;
+    const run = { anims, state: 'run' };
+    runs.set(slide, run);
+    label(slide, 'Пауза', 'pause');
+    anims[0].onfinish = () => { run.state = 'end'; label(slide, 'Листать ещё раз', 'again'); };
+  }
+  slides.forEach((slide) => slide.querySelector('.show-play').addEventListener('click', () => {
+    const run = runs.get(slide);
+    if (!run) { play(slide); return; }
+    if (run.state === 'end') { stop(slide); play(slide); return; }
+    const pause = run.state === 'run';
+    run.anims.forEach((a) => (pause ? a.pause() : a.play()));
+    run.state = pause ? 'pause' : 'run';
+    label(slide, pause ? 'Продолжить' : 'Пауза', pause ? 'play' : 'pause');
+  }));
+  paint(0);
+}
+
 /* ===== Фоновое видео =====
-   Грузится после загрузки страницы. При «уменьшении движения» (в Windows — выключенные эффекты анимации)
-   и экономии трафика стоит заставка, анимацию включает тумблер вверху первого экрана; у остальных он же — пауза.
+   Грузится после загрузки страницы. По умолчанию включено у всех (решение владельца), кроме режима экономии трафика;
+   выключает тумблер на первом экране.
    Выбор запоминается. На скрытой вкладке видео стоит. */
 function initBackground() {
   const video = document.getElementById('bgVideo');
   const btn = document.getElementById('bgToggle');
   const note = document.getElementById('bgNote');
   if (!video || !btn) return;
-  const KEY = 'granit:bg';
+  const KEY = 'granit:bg2';   // новый ключ: прежний выбор «выключено» не мешает включению по умолчанию
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch (e) { /* хранилище недоступно */ }
-  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches || Boolean(navigator.connection && navigator.connection.saveData);
-  let on = saved ? saved === 'on' : !calm;
+  const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+  let on = saved ? saved === 'on' : !saveData;
 
   // начинаем с кадра заставки (POSTER_FRAME в tools/assets.py), чтобы картинка не прыгала
   video.addEventListener('loadedmetadata', () => { video.currentTime = 70 / 30; }, { once: true });
@@ -593,5 +721,6 @@ renderPlans();
 initCalc();
 initOrder();
 initFaq();
+initShow();
 initWindows();
 initBackground();
